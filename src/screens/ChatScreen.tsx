@@ -1,10 +1,12 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import React, { useState } from 'react';
-import { FlatList, Image, KeyboardAvoidingView, Platform, SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import React, { useState, useRef } from 'react';
+import { FlatList, Image, KeyboardAvoidingView, Platform, SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View, Alert } from 'react-native';
 import { theme } from '../theme';
 
 const AVATAR_URI = 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=200&q=80';
+
+const API_BASE = 'http://72.61.254.150:3000';
 
 interface Message {
     id: string;
@@ -50,6 +52,52 @@ export const ChatScreen = () => {
     const navigation = useNavigation();
     const [inputText, setInputText] = useState('');
     const [messages, setMessages] = useState<Message[]>(INITIAL_MESSAGES);
+    const [isTyping, setIsTyping] = useState(false);
+    const flatListRef = useRef<FlatList>(null);
+
+    const sendMessage = async () => {
+        if (!inputText.trim()) return;
+        
+        const userMessage: Message = {
+            id: Date.now().toString(),
+            text: inputText.trim(),
+            sender: 'user',
+            timestamp: Date.now(),
+        };
+        
+        setMessages(prev => [...prev, userMessage]);
+        setInputText('');
+        setIsTyping(true);
+        
+        try {
+            const res = await fetch(`${API_BASE}/api/chat`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: userMessage.text }),
+            });
+            const data = await res.json();
+            
+            const aiMessage: Message = {
+                id: (Date.now() + 1).toString(),
+                text: data.response,
+                sender: 'ai',
+                timestamp: Date.now(),
+            };
+            
+            setMessages(prev => [...prev, aiMessage]);
+        } catch (err) {
+            Alert.alert('Error', 'Failed to get response. Make sure the server is running.');
+            const errorMessage: Message = {
+                id: (Date.now() + 1).toString(),
+                text: "Sorry, I'm having trouble connecting. Please try again.",
+                sender: 'ai',
+                timestamp: Date.now(),
+            };
+            setMessages(prev => [...prev, errorMessage]);
+        } finally {
+            setIsTyping(false);
+        }
+    };
 
     const renderMessage = ({ item }: { item: Message }) => {
         const isUser = item.sender === 'user';
@@ -129,11 +177,16 @@ export const ChatScreen = () => {
                             placeholderTextColor={theme.colors.textSecondary}
                             value={inputText}
                             onChangeText={setInputText}
+                            onSubmitEditing={sendMessage}
+                            returnKeyType="send"
                         />
                     </View>
 
-                    <TouchableOpacity style={styles.micButton}>
-                        <Ionicons name="mic" size={24} color="#000" />
+                    <TouchableOpacity 
+                        style={[styles.micButton, inputText.trim() && styles.sendButtonActive]}
+                        onPress={sendMessage}
+                    >
+                        <Ionicons name="send" size={20} color="#fff" />
                     </TouchableOpacity>
                 </View>
             </KeyboardAvoidingView>
@@ -278,5 +331,8 @@ const styles = StyleSheet.create({
         backgroundColor: theme.colors.primary,
         justifyContent: 'center',
         alignItems: 'center',
+    },
+    sendButtonActive: {
+        backgroundColor: '#4CAF50',
     },
 });
