@@ -1,50 +1,86 @@
-# Welcome to your Expo app 👋
+# Sera AI - AI Companion App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Your personal AI friend, always there for you.
 
-## Get started
+## Features
 
-1. Install dependencies
+- 💬 Smart Conversations
+- 🎭 Personalized Avatar
+- 🔒 Private & Secure
 
+## Tech Stack
+
+- **Frontend:** React Native (Expo)
+- **Backend:** Express.js + SQLite
+- **Navigation:** React Navigation
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js 18+
+- npm or yarn
+
+### Installation
+
+```bash
+# Clone the repo
+git clone https://github.com/SHEIK-32/Sera---AI.git
+cd Sera---AI
+
+# Install mobile app dependencies
+npm install
+
+# Install server dependencies
+cd server
+npm install
+cd ..
+
+# Start the server (in one terminal)
+cd server
+npm start
+
+# Start the mobile app (in another terminal)
+npx expo start
+```
+
+### Running the App
+
+1. Start the backend server:
    ```bash
-   npm install
+   cd server
+   npm start
    ```
 
-2. Start the app
-
+2. Start Expo:
    ```bash
    npx expo start
    ```
 
-In the output, you'll find options to open the app in a
+3. Scan QR code with Expo Go on your Android device
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## Project Structure
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```
+Sera---AI/
+├── src/
+│   ├── screens/       # App screens
+│   ├── navigation/    # Navigation config
+│   ├── api/           # API client
+│   ├── store/         # State management
+│   └── theme/         # App theme
+├── server/            # Backend API
+│   └── server.js      # Express server
+├── App.tsx            # App entry point
+└── package.json       # Dependencies
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## API Endpoints
 
-## Learn more
+- `POST /api/auth/register` - Create account
+- `POST /api/auth/login` - Login
+- `POST /api/chat` - Chat with AI
 
-To learn more about developing your project with Expo, look at the following resources:
+## License
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+MIT
