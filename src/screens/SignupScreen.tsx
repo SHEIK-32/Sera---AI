@@ -29,7 +29,7 @@ export default function SignupScreen({ navigation }: Props) {
     setLoading(true);
     try {
       await auth.register(email, password, name);
-      navigation.replace('Main');
+      navigation.replace('Avatar');
     } catch (err: any) {
       Alert.alert('Registration Failed', err.message);
     } finally {
