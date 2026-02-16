@@ -239,12 +239,26 @@ app.get('/api/activities', (req, res) => {
 // Post activity
 app.post('/api/activities', (req, res) => {
   const { type, agent_id, task_id, message } = req.body;
+  
+  // Validate required fields
+  if (!type) {
+    return res.status(400).json({ error: 'type is required' });
+  }
+  if (!message) {
+    return res.status(400).json({ error: 'message is required' });
+  }
+  
+  const validTypes = ['task_created', 'task_claimed', 'task_updated', 'message_sent', 'document_created', 'agent_active'];
+  if (!validTypes.includes(type)) {
+    return res.status(400).json({ error: 'Invalid type. Must be one of: ' + validTypes.join(', ') });
+  }
+  
   const id = generateId();
   
   db.prepare(`
     INSERT INTO activities (id, type, agent_id, task_id, message)
     VALUES (?, ?, ?, ?, ?)
-  `).run(id, type, agent_id, task_id, message);
+  `).run(id, type, agent_id || 'system', task_id || null, message);
   
   res.status(201).json({ id, type, agent_id, task_id, message });
 });
