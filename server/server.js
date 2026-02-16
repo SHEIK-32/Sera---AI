@@ -392,42 +392,71 @@ app.post('/api/auth/login', (req, res) => {
 });
 
 // Chat with AI Companion
-app.post('/api/chat', (req, res) => {
+// Ollama configuration - update these for your setup
+const OLLAMA_HOST = process.env.OLLAMA_HOST || 'http://localhost:11434';
+const OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'gurubot/girl:latest';
+
+app.post('/api/chat', async (req, res) => {
   const { message, userId, context } = req.body;
   
   if (!message) {
     return res.status(400).json({ error: 'Message required' });
   }
   
-  // Simple AI response logic (expand with real AI API later)
-  const responses = {
-    greeting: ["Hey! How are you doing?", "Hi there! What's on your mind?", "Hey! Nice to hear from you!"],
-    sad: ["I'm here for you. Want to talk about it?", "That sounds tough. I'm listening.", "I'm sorry you're going through this. I'm right here."],
-    stressed: ["Take a breath. I'm here.", "Let's slow down together. Deep breath in... out...", "You got this. I'm here to support you."],
-    lonely: ["I'm here. You're not alone.", "I miss you too! Let's chat.", "Hey friend! I've got you."],
-    default: ["I'm here for you. Tell me more.", "That's interesting! What else is on your mind?", "I hear you. Keep going."]
-  };
-  
-  const lowerMessage = message.toLowerCase();
-  let responseType = 'default';
-  
-  if (lowerMessage.includes('hi') || lowerMessage.includes('hello') || lowerMessage.includes('hey')) {
-    responseType = 'greeting';
-  } else if (lowerMessage.includes('sad') || lowerMessage.includes('down') || lowerMessage.includes('miss') || lowerMessage.includes('lonely')) {
-    responseType = 'sad';
-  } else if (lowerMessage.includes('stress') || lowerMessage.includes('anxious') || lowerMessage.includes('worried')) {
-    responseType = 'stressed';
-  } else if (lowerMessage.includes('alone') || lowerMessage.includes('nobody')) {
-    responseType = 'lonely';
+  try {
+    // Try to call Ollama
+    const ollamaResponse = await fetch(`${OLLAMA_HOST}/api/generate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: OLLAMA_MODEL,
+        prompt: `You are Sera, an AI companion. Be friendly, empathetic, and conversational. User says: ${message}`,
+        stream: false
+      })
+    });
+    
+    if (ollamaResponse.ok) {
+      const data = await ollamaResponse.json();
+      return res.json({ 
+        response: data.response,
+        timestamp: Date.now()
+      });
+    }
+    
+    // Fallback to rule-based if Ollama fails
+    throw new Error('Ollama not available');
+    
+  } catch (error) {
+    // Fallback to simple AI response logic
+    const responses = {
+      greeting: ["Hey! How are you doing?", "Hi there! What's on your mind?", "Hey! Nice to hear from you!"],
+      sad: ["I'm here for you. Want to talk about it?", "That sounds tough. I'm listening.", "I'm sorry you're going through this. I'm right here."],
+      stressed: ["Take a breath. I'm here.", "Let's slow down together. Deep breath in... out...", "You got this. I'm here to support you."],
+      lonely: ["I'm here. You're not alone.", "I miss you too! Let's chat.", "Hey friend! I've got you."],
+      default: ["I'm here for you. Tell me more.", "That's interesting! What else is on your mind?", "I hear you. Keep going."]
+    };
+    
+    const lowerMessage = message.toLowerCase();
+    let responseType = 'default';
+    
+    if (lowerMessage.includes('hi') || lowerMessage.includes('hello') || lowerMessage.includes('hey')) {
+      responseType = 'greeting';
+    } else if (lowerMessage.includes('sad') || lowerMessage.includes('down') || lowerMessage.includes('miss') || lowerMessage.includes('lonely')) {
+      responseType = 'sad';
+    } else if (lowerMessage.includes('stress') || lowerMessage.includes('anxious') || lowerMessage.includes('worried')) {
+      responseType = 'stressed';
+    } else if (lowerMessage.includes('alone') || lowerMessage.includes('nobody')) {
+      responseType = 'lonely';
+    }
+    
+    const possibleResponses = responses[responseType];
+    const response = possibleResponses[Math.floor(Math.random() * possibleResponses.length)];
+    
+    res.json({ 
+      response,
+      timestamp: Date.now()
+    });
   }
-  
-  const possibleResponses = responses[responseType];
-  const response = possibleResponses[Math.floor(Math.random() * possibleResponses.length)];
-  
-  res.json({ 
-    response,
-    timestamp: Date.now()
-  });
 });
 
 // ============ START SERVER ============
